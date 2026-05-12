@@ -1,0 +1,9 @@
+.git
+.next
+node_modules
+apps/web/.next
+apps/web/node_modules
+services/ml-api/.venv
+services/ml-api/__pycache__
+services/ml-api/app/__pycache__
+*.pyc

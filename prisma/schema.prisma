@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../apps/web/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  CUSTOMER_SUCCESS
+  ANALYST_QUALITY
+  COMMERCIAL_DIRECTION
+  ADMIN
+}
+
+enum RiskLabel {
+  HIGH
+  MEDIUM
+  LOW
+  MANUAL_REVIEW
+}
+
+enum SentimentLabel {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum ConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ClientRiskStatus {
+  CRITICAL
+  WATCHLIST
+  STABLE
+  MANUAL_REVIEW
+}
+
+enum FollowUpStatus {
+  PENDING
+  CONTACTED
+  ESCALATED
+  IN_PROGRESS
+  CLOSED
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        RoleName @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id                         String                       @id @default(cuid())
+  email                      String                       @unique
+  name                       String
+  passwordHash               String?
+  isActive                   Boolean                      @default(true)
+  roleId                     String
+  role                       Role                         @relation(fields: [roleId], references: [id])
+  uploadedFiles              FileUpload[]                 @relation("UploadedBy")
+  manualReviews              Review[]                     @relation("CreatedBy")
+  corrections                HumanCorrection[]            @relation("CorrectedBy")
+  recommendationFeedback     RecommendationFeedback[]     @relation("FeedbackBy")
+  assignedFollowUps          FollowUp[]                   @relation("AssignedTo")
+  createdFollowUps           FollowUp[]                   @relation("FollowUpCreatedBy")
+  auditLogs                  AuditLog[]
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+}
+
+model Client {
+  id                   String           @id @default(cuid())
+  name                 String           @unique
+  externalRef          String?          @unique
+  riskStatus           ClientRiskStatus @default(STABLE)
+  accumulatedRiskScore Int              @default(0)
+  reviews              Review[]
+  followUps            FollowUp[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+}
+
+model FileUpload {
+  id                   String        @id @default(cuid())
+  originalFileName     String
+  storedFileName       String?
+  mimeType             String?
+  status               String        @default("PENDING")
+  totalRows            Int           @default(0)
+  validRows            Int           @default(0)
+  invalidRows          Int           @default(0)
+  warnings             Json?
+  uploadedById         String?
+  uploadedBy           User?         @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  reviews              Review[]
+  errors               UploadError[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model Review {
+  id                     String       @id @default(cuid())
+  clientId               String
+  client                 Client       @relation(fields: [clientId], references: [id])
+  fileUploadId           String?
+  fileUpload             FileUpload?  @relation(fields: [fileUploadId], references: [id], onDelete: SetNull)
+  createdById            String?
+  createdBy              User?        @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  sourceRecordId         String?      @unique
+  reviewDate             DateTime
+  year                   Int?
+  quarter                String?
+  month                  String?
+  source                 String?
+  comment                String
+  originalSentiment      String?
+  category               String
+  subcategory            String
+  product                String?
+  detail                 String?
+  originalClassification String
+  npsScore               Int?
+  rawData                Json?
+  prediction             Prediction?
+  followUps              FollowUp[]
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@index([clientId])
+  @@index([fileUploadId])
+  @@index([reviewDate])
+}
+
+model Prediction {
+  id                     String                       @id @default(cuid())
+  reviewId               String                       @unique
+  review                 Review                       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  riskLabel              RiskLabel
+  probability            Float
+  sentiment              SentimentLabel
+  primaryCause           String
+  secondaryCause         String?
+  confidence             ConfidenceLevel
+  urgency                String
+  recommendation         String
+  explanation            String
+  detectedSignals        Json?
+  warnings               Json?
+  triggeredRules         Json?
+  modelVersion           String?
+  humanCorrections       HumanCorrection[]
+  recommendationFeedback RecommendationFeedback[]
+  createdAt              DateTime                     @default(now())
+  updatedAt              DateTime                     @updatedAt
+}
+
+model UploadError {
+  id           String     @id @default(cuid())
+  fileUploadId String
+  fileUpload   FileUpload @relation(fields: [fileUploadId], references: [id], onDelete: Cascade)
+  rowNumber    Int
+  sourceRecordId String?
+  reason       String
+  rawData      Json?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([fileUploadId])
+}
+
+model HumanCorrection {
+  id                      String           @id @default(cuid())
+  predictionId            String
+  prediction              Prediction       @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  correctedById           String
+  correctedBy             User             @relation("CorrectedBy", fields: [correctedById], references: [id])
+  originalRiskLabel       RiskLabel
+  correctedRiskLabel      RiskLabel
+  originalSentiment       SentimentLabel?
+  correctedSentiment      SentimentLabel?
+  originalPrimaryCause    String?
+  correctedPrimaryCause   String?
+  reason                  String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  @@index([predictionId])
+  @@index([correctedById])
+}
+
+model RecommendationFeedback {
+  id           String     @id @default(cuid())
+  predictionId String
+  prediction   Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("FeedbackBy", fields: [userId], references: [id])
+  isUseful     Boolean
+  comment      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([predictionId])
+  @@index([userId])
+}
+
+model FollowUp {
+  id              String         @id @default(cuid())
+  clientId        String?
+  client          Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  reviewId        String?
+  review          Review?        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  assignedToId    String?
+  assignedTo      User?          @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdById     String?
+  createdBy       User?          @relation("FollowUpCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  status          FollowUpStatus @default(PENDING)
+  contactDate     DateTime?
+  actionTaken     String?
+  escalatedArea   String?
+  contactResult   String?
+  note            String?
+  closingNote     String?
+  closedAt        DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([clientId])
+  @@index([reviewId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model AuditLog {
+  id             String    @id @default(cuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  roleName       RoleName?
+  action         String
+  entityType     String
+  entityId       String?
+  previousValues Json?
+  newValues      Json?
+  description    String?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

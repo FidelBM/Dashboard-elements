@@ -1,0 +1,10 @@
+node_modules/
+.next/
+dist/
+build/
+.env
+*.log
+.codex-logs/
+*.pyc
+__pycache__/
+apps/web/src/generated/prisma/

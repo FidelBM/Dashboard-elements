@@ -1,0 +1,6 @@
+Fecha,ID,Comentario,Cliente,Categoria,Subcategoria,Clasificacion,Año,Trimestre,Mes,Fuente,Sentimiento,Producto,Detalle,NPS
+2026-04-28,SAMPLE-001,"Nadie responde y estamos evaluando cancelar por incumplimiento grave.","Cliente Demo Norte","Servicio","Seguimiento","Retención probable",2026,Q2,Abril,Encuesta,Negativo,Transporte,"Caso crítico para seguimiento",10
+2026-04-29,SAMPLE-002,"Los retrasos de esta semana afectaron nuestra operación y necesitamos una respuesta clara.","Cliente Demo Bajío","Operación","Retrasos","Alta intención de abandono",2026,Q2,Abril,Portal,Negativo,Almacenaje,"Retrasos operativos",3
+2026-04-30,SAMPLE-003,"El servicio mejoró, pero falta comunicación sobre incidencias.","Cliente Demo Centro","Servicio","Comunicación","Experiencia intermedia",2026,Q2,Abril,Correo,Neutral,Transporte,"Seguimiento preventivo",6
+2026-05-01,SAMPLE-004,"Excelente atención, entrega puntual y visibilidad suficiente.","Cliente Demo Pacífico","Servicio","Entrega","Retención probable",2026,Q2,Mayo,Encuesta,Positivo,Distribución,"Comentario positivo",9
+2026-05-02,SAMPLE-005,,"Cliente Demo Centro","Servicio","Seguimiento","Experiencia intermedia",2026,Q2,Mayo,Encuesta,Neutral,Transporte,"Fila inválida para demo",5
