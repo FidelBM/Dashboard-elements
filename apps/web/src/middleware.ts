@@ -15,13 +15,13 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get(AUTH_ROLE_COOKIE)?.value;
 
   if (!isRoleName(role)) {
-    const loginUrl = localBrowserUrl("/login", request.url);
+    const loginUrl = localBrowserUrl("/login", request.url, request.headers);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   if (!canAccessPath(role, pathname)) {
-    return NextResponse.redirect(localBrowserUrl("/unauthorized", request.url));
+    return NextResponse.redirect(localBrowserUrl("/unauthorized", request.url, request.headers));
   }
 
   return NextResponse.next();

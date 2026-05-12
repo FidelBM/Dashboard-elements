@@ -11,7 +11,10 @@ export async function POST(request: NextRequest) {
   const nextPath = String(formData.get("next") ?? "");
 
   if (!isRoleName(roleValue)) {
-    return NextResponse.redirect(localBrowserUrl("/login?error=invalid-role", request.url), 303);
+    return NextResponse.redirect(
+      localBrowserUrl("/login?error=invalid-role", request.url, request.headers),
+      303,
+    );
   }
 
   const user = demoUsers.find((demoUser) => demoUser.role === roleValue);
@@ -23,7 +26,10 @@ export async function POST(request: NextRequest) {
     select: { id: true },
   });
   const redirectPath = nextPath.startsWith("/") ? nextPath : getDefaultPathForRole(roleValue);
-  const response = NextResponse.redirect(localBrowserUrl(redirectPath, request.url), 303);
+  const response = NextResponse.redirect(
+    localBrowserUrl(redirectPath, request.url, request.headers),
+    303,
+  );
 
   await logAuditEvent(prisma, {
     userId: dbUser?.id ?? null,

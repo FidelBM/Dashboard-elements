@@ -13,3 +13,14 @@ test("keeps localhost redirects unchanged", () => {
 
   assert.equal(url.toString(), "http://localhost:3000/dashboard");
 });
+
+test("uses forwarded railway host instead of internal localhost", () => {
+  const headers = new Headers({
+    "x-forwarded-host": "demo-v1.up.railway.app",
+    "x-forwarded-proto": "https",
+  });
+
+  const url = localBrowserUrl("/dashboard", "http://localhost:8080/login", headers);
+
+  assert.equal(url.toString(), "https://demo-v1.up.railway.app/dashboard");
+});
