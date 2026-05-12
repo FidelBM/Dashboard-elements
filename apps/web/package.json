@@ -1,0 +1,32 @@
+{
+  "name": "@supply-chain-review-intelligence/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate --schema ../../prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema ../../prisma/schema.prisma",
+    "db:seed": "prisma db seed --schema ../../prisma/schema.prisma",
+    "db:studio": "prisma studio --schema ../../prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "6.1.0",
+    "next": "^15.1.11",
+    "prisma": "6.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  },
+  "prisma": {
+    "seed": "tsx ../../prisma/seed.ts"
+  }
+}
